@@ -9,14 +9,14 @@ import About from './src/screens/about';
 
 const Stack = createNativeStackNavigator();
 
-function LogoTitle() {
-  return (
-    <View style={{width: 50, height: 50, justifyContent: 'center'}}>
-      <Image source="https://www.tailorbrands.com/wp-content/uploads/2020/07/mcdonalds-logo.jpg" />
-      <Text>About</Text>
-    </View>
-  );
-}
+// function LogoTitle() {
+//   return (
+//     <View style={{width: 50, height: 50, justifyContent: 'center'}}>
+//       <Image source="https://www.tailorbrands.com/wp-content/uploads/2020/07/mcdonalds-logo.jpg" />
+//       <Text>About</Text>
+//     </View>
+//   );
+// }
 
 function App() {
   return (
@@ -40,7 +40,7 @@ function App() {
             name="About"
             component={About}
             options={{
-              headerTitle: () => <LogoTitle />,
+              // headerTitle: () => <LogoTitle />,
               headerRight: () => (
                 <Button
                   onPress={() => alert('This is a button!')}
