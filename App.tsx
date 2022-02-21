@@ -7,6 +7,8 @@ import {TransitionPresets} from '@react-navigation/stack';
 import Home from './src/screens/home';
 import About from './src/screens/about';
 
+import Colors from './src/global/colors';
+
 const Stack = createNativeStackNavigator();
 
 // function LogoTitle() {
@@ -21,19 +23,20 @@ const Stack = createNativeStackNavigator();
 function App() {
   return (
     <>
-      <StatusBar animated={true} backgroundColor="orangered" />
+      <StatusBar animated={true} backgroundColor={Colors.primary} />
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={({route, navigation}) => ({
-            // gestureEnabled: true,
+            gestureEnabled: true,
             ...TransitionPresets.ModalPresentationIOS,
           })}>
           <Stack.Screen
             name="Home"
             component={Home}
             options={{
-              title: 'Anasayfa',
+              title: 'Home',
               ...style.header,
+              header: () => null,
             }}
           />
           <Stack.Screen
