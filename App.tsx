@@ -1,12 +1,6 @@
 import * as React from 'react';
-import {
-  StatusBar,
-  StyleSheet,
-  Image,
-  View,
-  Text,
-  Pressable,
-} from 'react-native';
+import {StatusBar, StyleSheet, View, Platform} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {TransitionPresets} from '@react-navigation/stack';
@@ -14,63 +8,38 @@ import {TransitionPresets} from '@react-navigation/stack';
 import Home from './src/screens/home';
 import Note from './src/screens/note';
 
-import {Ionicons} from '@expo/vector-icons';
-
 import Colors from './src/global/colors';
+
+const TransitionScreenOptions = {
+  ...TransitionPresets.ScaleFromCenterAndroid, // This is where the transition happens
+};
 
 const Stack = createNativeStackNavigator();
 
-function App() {
+function Routes() {
   return (
-    <>
-      <StatusBar animated={true} backgroundColor={Colors.primary} />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={({route, navigation}) => ({
-            gestureEnabled: true,
-            ...TransitionPresets.ModalPresentationIOS,
-          })}>
-          <Stack.Screen
-            name="Home"
-            component={Home}
-            options={{
-              title: 'Home',
-              ...style.header,
-              header: () => null,
-            }}
-          />
-          <Stack.Screen
-            name="Note"
-            component={Note}
-            options={{
-              headerTitle: 'Note',
-              headerRight: () => (
-                <Pressable onPress={() => alert('This is a button!')}>
-                  <Ionicons
-                    name="ellipsis-horizontal"
-                    size={30}
-                    color={Colors.primary}
-                  />
-                </Pressable>
-              ),
-            }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </>
+    <Stack.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        ...TransitionScreenOptions,
+        gestureEnabled: true,
+        headerShown: false,
+      }}>
+      <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="Note" component={Note} />
+    </Stack.Navigator>
   );
 }
 
-const style = StyleSheet.create({
-  header: {
-    headerStyle: {
-      backgroundColor: 'orangered',
-    },
-    headerTintColor: '#fff',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-    },
-  },
-});
+function App() {
+  return (
+    <SafeAreaProvider>
+      <StatusBar animated={true} backgroundColor={Colors.primary} />
+      <NavigationContainer>
+        <Routes />
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+}
 
 export default App;

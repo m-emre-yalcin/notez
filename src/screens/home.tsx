@@ -1,7 +1,9 @@
 import React, {useState} from 'react';
 import {RefreshControl, StyleSheet, View, FlatList} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
+import PlusButton from '../components/PlusButton';
 
 import Colors from '../global/colors';
 
@@ -70,12 +72,19 @@ const Home = ({navigation}) => {
   }, []);
 
   return (
-    <View>
+    <SafeAreaView>
       <FlatList
         style={style.noteList}
         ListHeaderComponent={<SearchBar />}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListFooterComponent={
+          <View
+            style={{
+              height: 5,
+            }}
+          />
         }
         data={notes}
         renderItem={({item}) => (
@@ -86,12 +95,16 @@ const Home = ({navigation}) => {
         )}
         keyExtractor={(item: note) => item.id}
       />
-    </View>
+
+      <PlusButton navigation={navigation} />
+    </SafeAreaView>
   );
 };
 
 const style = StyleSheet.create({
-  noteList: {},
+  noteList: {
+    backgroundColor: Colors.secondary,
+  },
 });
 
 export default Home;

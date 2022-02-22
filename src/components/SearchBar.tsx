@@ -1,43 +1,58 @@
-import {StyleSheet, View, TextInput, useColorScheme} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  Pressable,
+  useColorScheme,
+} from 'react-native';
 
 import {Ionicons} from '@expo/vector-icons';
 import Colors from '../global/colors';
 
 const SearchBar = () => {
   return (
-    <View
-      style={{
-        flex: 1,
-      }}>
+    <View style={style.searchBar}>
       <TextInput
-        style={style.SearchBar}
+        style={style.input}
         clearTextOnFocus={false}
         keyboardAppearance={useColorScheme()}
         maxLength={50}
         placeholder="Search"
         placeholderTextColor={Colors.tertiary}
+        autoCapitalize="none"
       />
-      <Ionicons name="search-outline" style={style.SearchBarIcon} />
+      <Pressable
+        style={style.searchBarIcon}
+        android_ripple={{
+          color: Colors.primary,
+          borderless: true,
+        }}>
+        <Ionicons name="search-outline" size={24} />
+      </Pressable>
     </View>
   );
 };
 
 const style = StyleSheet.create({
-  SearchBar: {
+  searchBar: {
+    flex: 1,
+  },
+  input: {
     margin: 10,
     padding: 5,
+    height: 45,
     paddingRight: 40,
     paddingLeft: 10,
     fontSize: 20,
     borderWidth: 1,
     borderRadius: 4,
-    borderColor: Colors.primary,
+    borderColor: Colors.primarySoft,
     position: 'relative',
   },
-  SearchBarIcon: {
+  searchBarIcon: {
     position: 'absolute',
     zIndex: 1,
-    top: 15,
+    top: 20,
     right: 15,
     fontSize: 20,
     width: 30,
