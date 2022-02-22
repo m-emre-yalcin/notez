@@ -1,40 +1,66 @@
 import React, {useState} from 'react';
-import type {Node} from 'react';
-import {
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  TextInput,
-  useColorScheme,
-} from 'react-native';
+import {RefreshControl, StyleSheet, View, FlatList} from 'react-native';
+import SearchBar from '../components/SearchBar';
+import NoteContainer from '../components/NoteContainer';
 
 import Colors from '../global/colors';
 
-import SearchIcon from '../../assets/icons/search.svg';
-
-const SearchBar = (): Node => {
-  return (
-    <View
-      style={{
-        flex: 1,
-      }}>
-      <TextInput
-        style={style.SearchBar}
-        clearTextOnFocus={false}
-        keyboardAppearance={useColorScheme()}
-        maxLength={50}
-        placeholder="Search"
-        placeholderTextColor={Colors.tertiary}
-      />
-      <SearchIcon />
-    </View>
-  );
+declare type note = {
+  id: number;
+  title: string;
+  content: string;
 };
 
-const Home = ({navigation}): Node => {
+const notes = [
+  {
+    id: 1,
+    title: 'Note 1',
+    content:
+      'This is the first note. It is a long note. Yeah thats right. It is a long note... Test one two three.',
+  },
+  {
+    id: 2,
+    title: 'Note 2',
+    content: 'This is the second note',
+  },
+  {
+    id: 3,
+    title: 'Note 3',
+    content: 'This is the third note',
+  },
+  {
+    id: 4,
+    title: 'Note 4',
+    content: 'This is the fourth note',
+  },
+  {
+    id: 5,
+    title: 'Note 5',
+    content: 'This is the fifth note',
+  },
+  {
+    id: 6,
+    title: 'Note 6',
+    content: 'This is the sixth note',
+  },
+  {
+    id: 7,
+    title: 'Note 7',
+    content: 'This is the seventh note',
+  },
+  {
+    id: 8,
+    title: 'Note 8',
+    content: 'This is the eighth note',
+  },
+  {
+    id: 9,
+    title: 'Note 9',
+    content: 'This is the ninth note',
+  },
+] as note[];
+
+const Home = ({navigation}) => {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -44,31 +70,28 @@ const Home = ({navigation}): Node => {
   }, []);
 
   return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      <SearchBar></SearchBar>
-    </ScrollView>
+    <View>
+      <FlatList
+        style={style.noteList}
+        ListHeaderComponent={<SearchBar />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        data={notes}
+        renderItem={({item}) => (
+          <NoteContainer
+            item={item}
+            onPress={() => navigation.push('Note', {...item})}
+          />
+        )}
+        keyExtractor={(item: note) => item.id}
+      />
+    </View>
   );
 };
 
 const style = StyleSheet.create({
-  SearchBar: {
-    borderWidth: 1,
-    margin: 10,
-    padding: 5,
-    fontSize: 20,
-    borderRadius: 4,
-    position: 'relative',
-  },
-  SearchBarIcon: {
-    width: 20,
-    height: 20,
-    position: 'absolute',
-    zIndex: 1,
-    right: 10,
-  },
+  noteList: {},
 });
 
 export default Home;

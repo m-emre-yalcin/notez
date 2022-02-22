@@ -1,24 +1,24 @@
 import * as React from 'react';
-import {StatusBar, StyleSheet, Image, Button, View, Text} from 'react-native';
+import {
+  StatusBar,
+  StyleSheet,
+  Image,
+  View,
+  Text,
+  Pressable,
+} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {TransitionPresets} from '@react-navigation/stack';
 
 import Home from './src/screens/home';
-import About from './src/screens/about';
+import Note from './src/screens/note';
+
+import {Ionicons} from '@expo/vector-icons';
 
 import Colors from './src/global/colors';
 
 const Stack = createNativeStackNavigator();
-
-// function LogoTitle() {
-//   return (
-//     <View style={{width: 50, height: 50, justifyContent: 'center'}}>
-//       <Image source="https://www.tailorbrands.com/wp-content/uploads/2020/07/mcdonalds-logo.jpg" />
-//       <Text>About</Text>
-//     </View>
-//   );
-// }
 
 function App() {
   return (
@@ -40,16 +40,18 @@ function App() {
             }}
           />
           <Stack.Screen
-            name="About"
-            component={About}
+            name="Note"
+            component={Note}
             options={{
-              // headerTitle: () => <LogoTitle />,
+              headerTitle: 'Note',
               headerRight: () => (
-                <Button
-                  onPress={() => alert('This is a button!')}
-                  title="Info"
-                  color="orangered"
-                />
+                <Pressable onPress={() => alert('This is a button!')}>
+                  <Ionicons
+                    name="ellipsis-horizontal"
+                    size={30}
+                    color={Colors.primary}
+                  />
+                </Pressable>
               ),
             }}
           />
