@@ -1,14 +1,24 @@
 import React from 'react';
-import {View, Pressable, StyleSheet} from 'react-native';
+import {View, Pressable, StyleSheet, Vibration} from 'react-native';
+import storage from '../services/async-storage';
 import {Ionicons} from '@expo/vector-icons';
 
 import Colors from '../global/colors';
+
+import type {Note} from '../types';
 
 const PlusButton = ({navigation}) => {
   return (
     <View style={style.plusButton}>
       <Pressable
-        onPress={() => navigation.navigate('Note', {title: 'Create note'})}
+        onPress={() => {
+          const noteId = createNewNote();
+          Vibration.vibrate(50);
+          navigation.navigate('Note', {
+            placeholder: 'Create note',
+            id: noteId,
+          });
+        }}
         android_ripple={{
           borderless: true,
           color: Colors.secondary,
@@ -17,6 +27,31 @@ const PlusButton = ({navigation}) => {
       </Pressable>
     </View>
   );
+};
+
+const createNewNote = async () => {
+  let notes = (await storage.getItem('notes')) as Note[];
+  if (!Array.isArray(notes)) {
+    notes = [];
+  }
+
+  const note = {
+    id: Date.now(),
+    title: '',
+    content: '',
+    color: '#fff',
+    created_at: Date.now(),
+    updated_at: Date.now(),
+    isArchived: false,
+    isPinned: false,
+    isTrashed: false,
+  } as Note;
+
+  notes.unshift(note);
+  await storage.setItem('notes', notes);
+
+  console.log('New note created');
+  return note.id;
 };
 
 const style = StyleSheet.create({

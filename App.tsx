@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {StatusBar, StyleSheet, View, Platform} from 'react-native';
+import {StatusBar} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -34,7 +34,7 @@ function Routes() {
 function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar animated={true} backgroundColor={Colors.primary} />
+      <StatusBar animated={true} backgroundColor={Colors.secondary} />
       <NavigationContainer>
         <Routes />
       </NavigationContainer>

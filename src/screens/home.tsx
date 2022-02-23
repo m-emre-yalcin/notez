@@ -1,71 +1,33 @@
-import React, {useState} from 'react';
-import {RefreshControl, StyleSheet, View, FlatList} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {RefreshControl, StyleSheet, View, Text, FlatList} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
 import PlusButton from '../components/PlusButton';
 
 import Colors from '../global/colors';
+import storage from '../services/async-storage';
 
-declare type note = {
-  id: number;
-  title: string;
-  content: string;
+import type {Note} from '../types';
+
+const getNotes = async setNotes => {
+  const data = await storage.getItem('notes');
+
+  if (data !== null) {
+    setNotes(data);
+  }
 };
 
-const notes = [
-  {
-    id: 1,
-    title: 'Note 1',
-    content:
-      'This is the first note. It is a long note. Yeah thats right. It is a long note... Test one two three.',
-  },
-  {
-    id: 2,
-    title: 'Note 2',
-    content: 'This is the second note',
-  },
-  {
-    id: 3,
-    title: 'Note 3',
-    content: 'This is the third note',
-  },
-  {
-    id: 4,
-    title: 'Note 4',
-    content: 'This is the fourth note',
-  },
-  {
-    id: 5,
-    title: 'Note 5',
-    content: 'This is the fifth note',
-  },
-  {
-    id: 6,
-    title: 'Note 6',
-    content: 'This is the sixth note',
-  },
-  {
-    id: 7,
-    title: 'Note 7',
-    content: 'This is the seventh note',
-  },
-  {
-    id: 8,
-    title: 'Note 8',
-    content: 'This is the eighth note',
-  },
-  {
-    id: 9,
-    title: 'Note 9',
-    content: 'This is the ninth note',
-  },
-] as note[];
-
 const Home = ({navigation}) => {
+  const [notes, setNotes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => {
+    getNotes(setNotes);
+  }, [notes]);
+
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    getNotes(setNotes);
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
@@ -76,8 +38,15 @@ const Home = ({navigation}) => {
       <FlatList
         style={style.noteList}
         ListHeaderComponent={<SearchBar />}
+        ListEmptyComponent={
+          <View>
+            <Text style={{color: Colors.tertiary, padding: 10}}>
+              Add some notes...
+            </Text>
+          </View>
+        }
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => onRefresh} />
         }
         ListFooterComponent={
           <View
@@ -90,10 +59,12 @@ const Home = ({navigation}) => {
         renderItem={({item}) => (
           <NoteContainer
             item={item}
-            onPress={() => navigation.push('Note', {...item})}
+            onPress={() =>
+              navigation.push('Note', {id: item.id, title: item.title})
+            }
           />
         )}
-        keyExtractor={(item: note) => item.id}
+        keyExtractor={(item: Note) => item.id}
       />
 
       <PlusButton navigation={navigation} />
@@ -104,6 +75,7 @@ const Home = ({navigation}) => {
 const style = StyleSheet.create({
   noteList: {
     backgroundColor: Colors.secondary,
+    height: '100%',
   },
 });
 

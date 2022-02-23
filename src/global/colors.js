@@ -1,6 +1,6 @@
 export default {
-  primary: '#4A4A4A',
-  secondary: '#FFFFFF',
+  primary: '#FFFFFF',
+  secondary: '#4A4A4A',
   tertiary: '#AAAAAA',
   primarySoft: '#CCCCCC',
 }

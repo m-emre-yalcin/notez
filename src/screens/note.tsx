@@ -1,22 +1,59 @@
-import React, {useState} from 'react';
-import {ScrollView, TextInput, StyleSheet} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  ScrollView,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Colors from '../global/colors';
 import NoteHeader from '../components/NoteHeader';
+import Colors from '../global/colors';
+import storage from '../services/async-storage';
+import {Note} from '../types';
+type Props = {
+  navigation: any;
+  route: any;
+};
 
-const Note = ({route, navigation}) => {
-  const [editable, setEditable] = useState(true);
+const NoteScreen = (props: Props) => {
+  let noteEditorInput: TextInput | null = null;
+  const [note, setNote] = useState({} as Note);
+  const id = props.route.params.id;
+
+  useEffect(() => {
+    if (id) {
+      storage.getItem('notes').then(notes => {
+        const data = notes.find(note => note.id === id);
+        if (data !== null) {
+          // storage.setItem('notes', notes);
+          setNote(data);
+        }
+      });
+    }
+  }, [note]);
+
   return (
     <SafeAreaView>
-      <NoteHeader route={route} navigation={navigation} />
-      <ScrollView style={style.noteView}>
-        <TextInput
-          style={style.noteContent}
-          value={route.params.content}
-          multiline={true}
-          editable={editable}
-        />
-      </ScrollView>
+      <NoteHeader route={props.route} navigation={props.navigation} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <Pressable onPress={() => noteEditorInput.focus()}>
+          <ScrollView style={style.noteView}>
+            <TextInput
+              ref={input => {
+                noteEditorInput = input;
+              }}
+              style={style.noteContent}
+              value={note.content}
+              placeholder="Type here..."
+              placeholderTextColor={Colors.tertiary}
+              multiline={true}
+            />
+          </ScrollView>
+        </Pressable>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -34,9 +71,8 @@ const style = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 10,
     color: Colors.primary,
-    height: '100%',
-    flex: 1,
+    textAlignVertical: 'top',
   },
 });
 
-export default Note;
+export default NoteScreen;

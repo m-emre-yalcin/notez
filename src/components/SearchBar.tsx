@@ -27,7 +27,7 @@ const SearchBar = () => {
           color: Colors.primary,
           borderless: true,
         }}>
-        <Ionicons name="search-outline" size={24} />
+        <Ionicons name="search-outline" size={24} color={Colors.primary} />
       </Pressable>
     </View>
   );
@@ -59,7 +59,6 @@ const style = StyleSheet.create({
     height: 30,
     textAlign: 'center',
     textAlignVertical: 'center',
-    color: Colors.primary,
   },
 });
 

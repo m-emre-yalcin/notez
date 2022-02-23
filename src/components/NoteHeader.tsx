@@ -1,10 +1,17 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, TextInput, Pressable} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import Colors from '../global/colors';
 
 const NoteHeader = ({route, navigation}) => {
   const [editable, setEditable] = useState(false);
+  const [saveProcessing, setSaveProcessing] = useState(false);
 
   return (
     <View style={style.header}>
@@ -20,7 +27,8 @@ const NoteHeader = ({route, navigation}) => {
       <TextInput
         value={route.params.title}
         editable={true}
-        placeholder="Note"
+        placeholder={route.params.placeholder || 'Note'}
+        placeholderTextColor={Colors.tertiary}
         style={style.title}
       />
       <Pressable
@@ -30,7 +38,15 @@ const NoteHeader = ({route, navigation}) => {
           color: Colors.primary,
           borderless: true,
         }}>
-        <Ionicons name="ellipsis-horizontal" size={24} color={Colors.primary} />
+        {saveProcessing ? (
+          <ActivityIndicator color={Colors.primary} />
+        ) : (
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={24}
+            color={Colors.primary}
+          />
+        )}
       </Pressable>
     </View>
   );
@@ -49,6 +65,7 @@ const style = StyleSheet.create({
     flex: 1,
     fontSize: 22,
     fontWeight: 'bold',
+    color: Colors.primary,
     marginLeft: 5,
   },
   button: {
