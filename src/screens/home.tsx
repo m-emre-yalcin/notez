@@ -4,26 +4,49 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
 import PlusButton from '../components/PlusButton';
-
+import Database from '../services/database';
 import Colors from '../global/colors';
-import storage from '../services/async-storage';
 
 import type {Note} from '../types';
 
+const createNotesTable = () => {
+  const x = Database.db.transaction(tx => {
+    tx.executeSql('select * from notes', null, (tx, result) => {
+      console.log('create table success', result);
+    });
+  });
+  console.log('x', x);
+  Database.createTable(
+    'notes',
+    `id INTEGER PRIMARY KEY NOT NULL,
+    title VARCHAR(255), content TEXT,
+    color VARCHAR(20),
+    isPinned BOOLEAN,
+    isArchived BOOLEAN,
+    created_at DATETIME,
+    updated_at DATETIME`,
+  ).then(res => {
+    console.log('create notes table');
+  });
+};
 const getNotes = async setNotes => {
-  const data = await storage.getItem('notes');
-
-  if (data !== null) {
-    setNotes(data);
-  }
+  Database.get('notes').then(data => {
+    console.log(data);
+    if (data !== null && Array.isArray(data)) {
+      let notes = data.filter(note => note !== undefined);
+      setNotes(notes);
+      console.log('getNotes', notes);
+    }
+  });
 };
 
 const Home = ({navigation}) => {
   const [notes, setNotes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   useEffect(() => {
+    createNotesTable();
     getNotes(setNotes);
-  }, [notes]);
+  }, []);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);

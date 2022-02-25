@@ -10,8 +10,9 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import NoteHeader from '../components/NoteHeader';
 import Colors from '../global/colors';
-import storage from '../services/async-storage';
-import {Note} from '../types';
+import Database from '../services/database';
+
+import type {Note} from '../types';
 type Props = {
   navigation: any;
   route: any;
@@ -19,20 +20,17 @@ type Props = {
 
 const NoteScreen = (props: Props) => {
   let noteEditorInput: TextInput | null = null;
-  const [note, setNote] = useState({} as Note);
+  const [note, setNote] = useState({} as any);
   const id = props.route.params.id;
 
   useEffect(() => {
-    if (id) {
-      storage.getItem('notes').then(notes => {
-        const data = notes.find(note => note.id === id);
-        if (data !== null) {
-          // storage.setItem('notes', notes);
-          setNote(data);
-        }
+    console.log('id', id);
+    if (id && typeof id === 'number') {
+      Database.get(`/notes/${id}`).then(data => {
+        setNote(data);
       });
     }
-  }, [note]);
+  }, [id]);
 
   return (
     <SafeAreaView>
@@ -47,6 +45,14 @@ const NoteScreen = (props: Props) => {
               }}
               style={style.noteContent}
               value={note.content}
+              onBlur={() => {
+                console.log('note:', note);
+                if (note.content) {
+                  Database.update(`/notes/${id}`, note).then(data => {
+                    console.log(data);
+                  });
+                }
+              }}
               placeholder="Type here..."
               placeholderTextColor={Colors.tertiary}
               multiline={true}

@@ -1,8 +1,7 @@
 import React from 'react';
 import {View, Pressable, StyleSheet, Vibration} from 'react-native';
-import storage from '../services/async-storage';
 import {Ionicons} from '@expo/vector-icons';
-
+import Database from '../services/database';
 import Colors from '../global/colors';
 
 import type {Note} from '../types';
@@ -11,8 +10,8 @@ const PlusButton = ({navigation}) => {
   return (
     <View style={style.plusButton}>
       <Pressable
-        onPress={() => {
-          const noteId = createNewNote();
+        onPress={async () => {
+          const noteId = await createNewNote();
           Vibration.vibrate(50);
           navigation.navigate('Note', {
             placeholder: 'Create note',
@@ -30,11 +29,6 @@ const PlusButton = ({navigation}) => {
 };
 
 const createNewNote = async () => {
-  let notes = (await storage.getItem('notes')) as Note[];
-  if (!Array.isArray(notes)) {
-    notes = [];
-  }
-
   const note = {
     id: Date.now(),
     title: '',
@@ -47,10 +41,7 @@ const createNewNote = async () => {
     isTrashed: false,
   } as Note;
 
-  notes.unshift(note);
-  await storage.setItem('notes', notes);
-
-  console.log('New note created');
+  await Database.create('/notes', note);
   return note.id;
 };
 
