@@ -9,8 +9,7 @@ import {
 import {Ionicons} from '@expo/vector-icons';
 import Colors from '../global/colors';
 
-const NoteHeader = ({route, navigation}) => {
-  const [editable, setEditable] = useState(false);
+const NoteHeader = ({navigation, title, onChangeText, onBlur}) => {
   const [saveProcessing, setSaveProcessing] = useState(false);
 
   return (
@@ -25,11 +24,13 @@ const NoteHeader = ({route, navigation}) => {
         <Ionicons name="chevron-back" size={24} color={Colors.primary} />
       </Pressable>
       <TextInput
-        value={route.params.title}
+        value={title}
         editable={true}
-        placeholder={route.params.placeholder || 'Note'}
+        placeholder="Note Title"
         placeholderTextColor={Colors.tertiary}
         style={style.title}
+        onChangeText={onChangeText}
+        onBlur={onBlur}
       />
       <Pressable
         style={style.button}

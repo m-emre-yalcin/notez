@@ -1,59 +1,71 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {RefreshControl, StyleSheet, View, Text, FlatList} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
 import PlusButton from '../components/PlusButton';
-import Database from '../services/database';
 import Colors from '../global/colors';
+import firebaseApp from '../services/firebase';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  startAt,
+  limit,
+  onSnapshot,
+  getDocs,
+  setDoc,
+  doc,
+} from 'firebase/firestore';
 
 import type {Note} from '../types';
 
-const createNotesTable = () => {
-  const x = Database.db.transaction(tx => {
-    tx.executeSql('select * from notes', null, (tx, result) => {
-      console.log('create table success', result);
-    });
-  });
-  console.log('x', x);
-  Database.createTable(
-    'notes',
-    `id INTEGER PRIMARY KEY NOT NULL,
-    title VARCHAR(255), content TEXT,
-    color VARCHAR(20),
-    isPinned BOOLEAN,
-    isArchived BOOLEAN,
-    created_at DATETIME,
-    updated_at DATETIME`,
-  ).then(res => {
-    console.log('create notes table');
-  });
-};
-const getNotes = async setNotes => {
-  Database.get('notes').then(data => {
-    console.log(data);
-    if (data !== null && Array.isArray(data)) {
-      let notes = data.filter(note => note !== undefined);
-      setNotes(notes);
-      console.log('getNotes', notes);
-    }
-  });
-};
+// Firestore database
+const db = getFirestore(firebaseApp);
 
 const Home = ({navigation}) => {
   const [notes, setNotes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const getNotes = async () => {
+    const q = collection(db, '/notes');
+    const unsub = onSnapshot(q, doc => {
+      const data = [...notes];
+      doc.forEach(doc => {
+        data.unshift(doc.data());
+        setNotes(data);
+      });
+    });
+  };
+  const addNote = async () => {
+    const note = {
+      id: Date.now(),
+      title: '',
+      content: '',
+      color: '#fff',
+      created_at: Date.now(),
+      updated_at: Date.now(),
+      isArchived: false,
+      isPinned: false,
+      isTrashed: false,
+    } as Note;
+    const q = doc(db, `/notes/${note.id}`);
+    await setDoc(q, note).then(() => {
+      setNotes([note, ...notes]);
+      console.log('note added');
+    });
+    return note;
+  };
   useEffect(() => {
-    createNotesTable();
-    getNotes(setNotes);
+    getNotes();
   }, []);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getNotes(setNotes);
-    setTimeout(() => {
+    getNotes().then(() => {
       setRefreshing(false);
-    }, 2000);
+    });
   }, []);
 
   return (
@@ -69,7 +81,7 @@ const Home = ({navigation}) => {
           </View>
         }
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListFooterComponent={
           <View
@@ -90,7 +102,7 @@ const Home = ({navigation}) => {
         keyExtractor={(item: Note) => item.id}
       />
 
-      <PlusButton navigation={navigation} />
+      <PlusButton onPress={() => addNote()} navigation={navigation} />
     </SafeAreaView>
   );
 };

@@ -1,21 +1,21 @@
 import React from 'react';
 import {View, Pressable, StyleSheet, Vibration} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
-import Database from '../services/database';
 import Colors from '../global/colors';
 
 import type {Note} from '../types';
 
-const PlusButton = ({navigation}) => {
+const PlusButton = ({navigation, onPress}) => {
   return (
     <View style={style.plusButton}>
       <Pressable
         onPress={async () => {
-          const noteId = await createNewNote();
-          Vibration.vibrate(50);
-          navigation.navigate('Note', {
-            placeholder: 'Create note',
-            id: noteId,
+          onPress().then((note: Note) => {
+            // sucsessfully added a new note
+            Vibration.vibrate(50);
+            navigation.push('Note', {id: note.id});
+
+            console.log('added a new note');
           });
         }}
         android_ripple={{
@@ -26,23 +26,6 @@ const PlusButton = ({navigation}) => {
       </Pressable>
     </View>
   );
-};
-
-const createNewNote = async () => {
-  const note = {
-    id: Date.now(),
-    title: '',
-    content: '',
-    color: '#fff',
-    created_at: Date.now(),
-    updated_at: Date.now(),
-    isArchived: false,
-    isPinned: false,
-    isTrashed: false,
-  } as Note;
-
-  await Database.create('/notes', note);
-  return note.id;
 };
 
 const style = StyleSheet.create({

@@ -10,7 +10,19 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import NoteHeader from '../components/NoteHeader';
 import Colors from '../global/colors';
-import Database from '../services/database';
+import firebaseApp from '../services/firebase';
+import {
+  getFirestore,
+  query,
+  where,
+  startAt,
+  limit,
+  getDoc,
+  updateDoc,
+  doc,
+} from 'firebase/firestore';
+
+const db = getFirestore(firebaseApp);
 
 import type {Note} from '../types';
 type Props = {
@@ -22,19 +34,49 @@ const NoteScreen = (props: Props) => {
   let noteEditorInput: TextInput | null = null;
   const [note, setNote] = useState({} as any);
   const id = props.route.params.id;
+  const q = doc(db, `/notes/${id}`);
+
+  const handleTitleChanges = text => {
+    const newNote = {...note};
+    newNote.title = text;
+    setNote(newNote);
+  };
+  const handleContentChanges = text => {
+    const newNote = {...note};
+    newNote.content = text;
+    setNote(newNote);
+  };
+  const updateNote = () => {
+    updateDoc(q, note)
+      .then(() => {
+        console.log('note updated');
+      })
+      .catch(error => {
+        console.log('error when note updated:', error);
+      });
+  };
 
   useEffect(() => {
     console.log('id', id);
     if (id && typeof id === 'number') {
-      Database.get(`/notes/${id}`).then(data => {
-        setNote(data);
+      getDoc(q).then(doc => {
+        if (doc.exists()) {
+          setNote(doc.data());
+        } else {
+          console.log('doc not found');
+        }
       });
     }
   }, [id]);
 
   return (
     <SafeAreaView>
-      <NoteHeader route={props.route} navigation={props.navigation} />
+      <NoteHeader
+        navigation={props.navigation}
+        title={note.title}
+        onChangeText={handleTitleChanges}
+        onBlur={updateNote}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable onPress={() => noteEditorInput.focus()}>
@@ -45,17 +87,11 @@ const NoteScreen = (props: Props) => {
               }}
               style={style.noteContent}
               value={note.content}
-              onBlur={() => {
-                console.log('note:', note);
-                if (note.content) {
-                  Database.update(`/notes/${id}`, note).then(data => {
-                    console.log(data);
-                  });
-                }
-              }}
               placeholder="Type here..."
               placeholderTextColor={Colors.tertiary}
               multiline={true}
+              onChangeText={handleContentChanges}
+              onBlur={updateNote}
             />
           </ScrollView>
         </Pressable>
