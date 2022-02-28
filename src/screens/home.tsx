@@ -10,6 +10,7 @@ import {
   getFirestore,
   collection,
   query,
+  orderBy,
   where,
   startAt,
   limit,
@@ -27,17 +28,31 @@ const db = getFirestore(firebaseApp);
 const Home = ({navigation}) => {
   const [notes, setNotes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const ref = collection(db, '/notes');
+  const q = query(ref, orderBy('created_at', 'desc'), limit(10));
 
-  const getNotes = async () => {
-    const q = collection(db, '/notes');
+  const getNotes = useEffect(() => {
     const unsub = onSnapshot(q, doc => {
-      const data = [...notes];
+      const data = [];
       doc.forEach(doc => {
-        data.unshift(doc.data());
-        setNotes(data);
+        data.push(doc.data());
       });
+      setNotes(data);
     });
-  };
+    return () => {
+      console.log('unsubscribe notes/stop listening the notes');
+      unsub();
+    };
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getNotes;
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
+
   const addNote = async () => {
     const note = {
       id: Date.now(),
@@ -52,21 +67,10 @@ const Home = ({navigation}) => {
     } as Note;
     const q = doc(db, `/notes/${note.id}`);
     await setDoc(q, note).then(() => {
-      setNotes([note, ...notes]);
       console.log('note added');
     });
     return note;
   };
-  useEffect(() => {
-    getNotes();
-  }, []);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    getNotes().then(() => {
-      setRefreshing(false);
-    });
-  }, []);
 
   return (
     <SafeAreaView>
@@ -94,9 +98,7 @@ const Home = ({navigation}) => {
         renderItem={({item}) => (
           <NoteContainer
             item={item}
-            onPress={() =>
-              navigation.push('Note', {id: item.id, title: item.title})
-            }
+            onPress={() => navigation.push('Note', item)}
           />
         )}
         keyExtractor={(item: Note) => item.id}

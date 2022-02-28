@@ -9,14 +9,23 @@ import {
 import {Ionicons} from '@expo/vector-icons';
 import Colors from '../global/colors';
 
-const NoteHeader = ({navigation, title, onChangeText, onBlur}) => {
-  const [saveProcessing, setSaveProcessing] = useState(false);
-
+const NoteHeader = ({navigation, title, isSaving, onChangeText, onChange}) => {
   return (
     <View style={style.header}>
       <Pressable
         style={style.button}
-        onPress={() => navigation.goBack()}
+        onPress={() => {
+          if (!isSaving) {
+            navigation.goBack();
+          } else {
+            const interval = setInterval(() => {
+              if (!isSaving) {
+                clearInterval(interval);
+                navigation.goBack();
+              }
+            }, 100);
+          }
+        }}
         android_ripple={{
           color: Colors.primary,
           borderless: true,
@@ -30,7 +39,7 @@ const NoteHeader = ({navigation, title, onChangeText, onBlur}) => {
         placeholderTextColor={Colors.tertiary}
         style={style.title}
         onChangeText={onChangeText}
-        onBlur={onBlur}
+        onChange={onChange}
       />
       <Pressable
         style={style.button}
@@ -39,7 +48,7 @@ const NoteHeader = ({navigation, title, onChangeText, onBlur}) => {
           color: Colors.primary,
           borderless: true,
         }}>
-        {saveProcessing ? (
+        {isSaving ? (
           <ActivityIndicator color={Colors.primary} />
         ) : (
           <Ionicons

@@ -1,11 +1,22 @@
 import {StyleSheet, View, Text, Pressable} from 'react-native';
 import Colors from '../global/colors';
 
+const EmptyContent = ({children = 'Empty'}) => {
+  return <Text style={style.emptyText}>{children}</Text>;
+};
+
 const NoteContainer = ({item, onPress}) => {
   return (
     <Pressable style={style.container} onPress={onPress}>
-      <Text style={style.noteTitle}>{item.title}</Text>
-      <Text style={style.noteContent}>{item.content}</Text>
+      {item.title ? (
+        <Text style={style.noteTitle}>{item.title}</Text>
+      ) : (
+        <EmptyContent>Title</EmptyContent>
+      )}
+
+      <Text style={style.noteContent}>
+        {item.content || <EmptyContent>Content</EmptyContent>}
+      </Text>
     </Pressable>
   );
 };
@@ -30,6 +41,12 @@ const style = StyleSheet.create({
   noteContent: {
     fontSize: 16,
     color: Colors.primary,
+  },
+  emptyText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: Colors.tertiary,
+    opacity: 0.5,
   },
 });
 
