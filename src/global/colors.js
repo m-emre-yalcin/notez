@@ -1,6 +1,6 @@
 export default {
-  primary: '#FFFFFF',
-  secondary: '#4A4A4A',
-  tertiary: '#AAAAAA',
-  primarySoft: '#CCCCCC',
+  primary: '#F1F3F9',
+  secondary: '#0C121D',
+  tertiary: '#D4DDED',
+  primarySoft: '#1B2236',
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {StatusBar} from 'react-native';
+import {StatusBar, LogBox} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -9,6 +9,9 @@ import Home from './src/screens/home';
 import Note from './src/screens/note';
 
 import Colors from './src/global/colors';
+
+// Hide all warnings
+LogBox.ignoreAllLogs();
 
 const TransitionScreenOptions = {
   ...TransitionPresets.ScaleFromCenterAndroid, // This is where the transition happens

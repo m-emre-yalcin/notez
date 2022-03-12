@@ -18,6 +18,7 @@ import {
   where,
   startAt,
   limit,
+  setDoc,
   getDoc,
   updateDoc,
   doc,
@@ -36,35 +37,55 @@ const NoteScreen = (props: Props) => {
   const [note, setNote] = useState({} as any);
   const [saving, setSaving] = useState(false);
   const id = props.route.params.id;
-  const q = doc(db, `/notes/${id}`);
+  const q = doc(db, `notes/${id}`);
 
   useEffect(() => {
-    console.log('id', id);
+    console.log('note oppening:', id);
+
     if (id && typeof id === 'number') {
-      // set note that comes from parameters
-      setNote({...props.route.params});
+      if (props.route.params.content) {
+        // set note that comes from parameters
+        setNote({...props.route.params});
+      } else {
+        // get fresh note from firebase
+        getDoc(q).then(doc => {
+          if (doc.exists) {
+            setNote(doc.data());
+          } else {
+            console.log('note not found');
+          }
+        });
+      }
     }
   }, [id]);
 
-  const handleTitleChanges = text => {
+  const handleTitleChanges = async text => {
     const newNote = {...note};
     newNote.title = text;
     setNote(newNote);
+    updateNote(newNote);
   };
-  const handleContentChanges = text => {
+  const handleContentChanges = async text => {
     const newNote = {...note};
     newNote.content = text;
     setNote(newNote);
+    updateNote(newNote);
+  };
+  const handleDelete = async () => {
+    setSaving(true);
+    const q = doc(db, `/notes/${id}`);
+    await setDoc(q, {isTrashed: true});
+    setSaving(false);
   };
 
   // memoize the function or debounce won't work
   const updateNote = useCallback(
-    debounce(() => {
+    debounce(note => {
       setSaving(true);
       updateDoc(q, note)
         .then(() => {
           setSaving(false);
-          console.log('note updated');
+          console.log('note updated:', id);
         })
         .catch(error => {
           setSaving(false);
@@ -80,7 +101,7 @@ const NoteScreen = (props: Props) => {
         navigation={props.navigation}
         title={note.title}
         onChangeText={handleTitleChanges}
-        onChange={updateNote}
+        onDelete={handleDelete}
         isSaving={saving}
       />
       <KeyboardAvoidingView
@@ -97,7 +118,6 @@ const NoteScreen = (props: Props) => {
               placeholderTextColor={Colors.tertiary}
               multiline={true}
               onChangeText={handleContentChanges}
-              onChange={updateNote}
             />
           </ScrollView>
         </Pressable>

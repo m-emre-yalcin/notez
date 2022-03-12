@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -9,12 +9,14 @@ import {
 import {Ionicons} from '@expo/vector-icons';
 import Colors from '../global/colors';
 
-const NoteHeader = ({navigation, title, isSaving, onChangeText, onChange}) => {
+const NoteHeader = ({navigation, title, isSaving, onChangeText, onDelete}) => {
   return (
     <View style={style.header}>
       <Pressable
         style={style.button}
-        onPress={() => {
+        onPress={e => {
+          e.stopPropagation();
+          e.preventDefault();
           if (!isSaving) {
             navigation.goBack();
           } else {
@@ -39,11 +41,15 @@ const NoteHeader = ({navigation, title, isSaving, onChangeText, onChange}) => {
         placeholderTextColor={Colors.tertiary}
         style={style.title}
         onChangeText={onChangeText}
-        onChange={onChange}
       />
       <Pressable
         style={style.button}
-        onPress={() => alert('This is a button!')}
+        onPress={() =>
+          onDelete().then(() => {
+            alert('Note deleted');
+            navigation.popToTop();
+          })
+        }
         android_ripple={{
           color: Colors.primary,
           borderless: true,
@@ -51,11 +57,12 @@ const NoteHeader = ({navigation, title, isSaving, onChangeText, onChange}) => {
         {isSaving ? (
           <ActivityIndicator color={Colors.primary} />
         ) : (
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={24}
-            color={Colors.primary}
-          />
+          <Ionicons name="trash-bin-outline" size={24} color={Colors.primary} />
+          // <Ionicons
+          //   name="ellipsis-horizontal"
+          //   size={24}
+          //   color={Colors.primary}
+          // />
         )}
       </Pressable>
     </View>

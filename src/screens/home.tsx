@@ -1,5 +1,12 @@
-import React, {useEffect, useState, useCallback} from 'react';
-import {RefreshControl, StyleSheet, View, Text, FlatList} from 'react-native';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
+import {
+  RefreshControl,
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+  FlatList,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
@@ -12,7 +19,7 @@ import {
   query,
   orderBy,
   where,
-  startAt,
+  startAfter,
   limit,
   onSnapshot,
   getDocs,
@@ -28,30 +35,65 @@ const db = getFirestore(firebaseApp);
 const Home = ({navigation}) => {
   const [notes, setNotes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const ref = collection(db, '/notes');
-  const q = query(ref, orderBy('created_at', 'desc'), limit(10));
+  const [loading, setLoading] = useState(false);
+  const [newStart, setNewStart] = useState<any>(); // starting point of the query
+  const [isMax, setMax] = useState(false);
+  const flatList = useRef(null);
 
-  const getNotes = useEffect(() => {
-    const unsub = onSnapshot(q, doc => {
-      const data = [];
-      doc.forEach(doc => {
-        data.push(doc.data());
-      });
-      setNotes(data);
-    });
-    return () => {
-      console.log('unsubscribe notes/stop listening the notes');
-      unsub();
-    };
+  useEffect(() => {
+    getNotes();
   }, []);
 
   const onRefresh = useCallback(() => {
+    // reset get states
+    setMax(false);
+    setNewStart(false);
+    setNotes([]);
+
     setRefreshing(true);
-    getNotes;
-    setTimeout(() => {
+    getNotes().then(() => {
       setRefreshing(false);
-    }, 1000);
+    });
   }, []);
+
+  const getNotes = async () => {
+    const maxLimit = 8;
+
+    if (!isMax) {
+      setLoading(true);
+      let q;
+
+      if (newStart)
+        q = query(
+          collection(db, 'notes/'),
+          where('isTrashed', '==', false),
+          orderBy('created_at', 'desc'),
+          limit(maxLimit),
+          startAfter(newStart),
+        );
+      else
+        q = query(
+          collection(db, 'notes/'),
+          where('isTrashed', '==', false),
+          orderBy('created_at', 'desc'),
+          limit(maxLimit),
+        );
+      const querySnapshot = await getDocs(q);
+
+      const data = [...notes];
+      querySnapshot.forEach(doc => {
+        data.push(doc.data());
+        setNewStart(doc);
+      });
+      setNotes(data);
+      if (querySnapshot.docs.length < maxLimit) setMax(true);
+      else setMax(false);
+
+      console.log(querySnapshot.docs.length, 'notes fetched', 'ismax:', isMax);
+      setLoading(false);
+    } else console.log('max');
+    return loading;
+  };
 
   const addNote = async () => {
     const note = {
@@ -64,10 +106,11 @@ const Home = ({navigation}) => {
       isArchived: false,
       isPinned: false,
       isTrashed: false,
+      user: null,
     } as Note;
     const q = doc(db, `/notes/${note.id}`);
     await setDoc(q, note).then(() => {
-      console.log('note added');
+      console.log('note added:', note.id);
     });
     return note;
   };
@@ -75,14 +118,18 @@ const Home = ({navigation}) => {
   return (
     <SafeAreaView>
       <FlatList
+        ref={flatList}
         style={style.noteList}
         ListHeaderComponent={<SearchBar />}
         ListEmptyComponent={
-          <View>
-            <Text style={{color: Colors.tertiary, padding: 10}}>
-              Add some notes...
-            </Text>
-          </View>
+          notes.length === 0 &&
+          !loading && (
+            <View>
+              <Text style={{color: Colors.tertiary, padding: 10}}>
+                Add some notes...
+              </Text>
+            </View>
+          )
         }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -90,10 +137,18 @@ const Home = ({navigation}) => {
         ListFooterComponent={
           <View
             style={{
-              height: 5,
-            }}
-          />
+              height: loading ? 50 : 5,
+              display: 'flex',
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            {loading && (
+              <ActivityIndicator size="large" color={Colors.primary} />
+            )}
+          </View>
         }
+        onEndReached={() => getNotes()}
         data={notes}
         renderItem={({item}) => (
           <NoteContainer
