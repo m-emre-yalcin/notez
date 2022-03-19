@@ -1,10 +1,9 @@
-import * as React from 'react';
 import {StatusBar, LogBox} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {TransitionPresets} from '@react-navigation/stack';
-
+import {AppContextProvider} from './src/components/context';
 import Home from './src/screens/home';
 import Note from './src/screens/note';
 
@@ -21,20 +20,22 @@ const Stack = createNativeStackNavigator();
 
 function Routes() {
   return (
-    <Stack.Navigator
-      initialRouteName="Home"
-      screenOptions={{
-        ...TransitionScreenOptions,
-        gestureEnabled: true,
-        headerShown: false,
-      }}>
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen
-        name="Note"
-        component={Note}
-        options={{presentation: 'modal'}}
-      />
-    </Stack.Navigator>
+    <AppContextProvider>
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          ...TransitionScreenOptions,
+          gestureEnabled: true,
+          headerShown: false,
+        }}>
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen
+          name="Note"
+          component={Note}
+          options={{presentation: 'modal'}}
+        />
+      </Stack.Navigator>
+    </AppContextProvider>
   );
 }
 

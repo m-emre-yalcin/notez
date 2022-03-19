@@ -4,11 +4,11 @@ export default {
   version: '1.0.0',
   slug: "notez",
   orientation: "portrait",
-  icon: "./assets/icon.png",
+  icon: "./assets/ios/iTunesArtwork@3x.png",
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
-    backgroundColor: "#ffffff"
+    backgroundColor: "#000"
   },
   updates: {
     fallbackToCacheTimeout: 0
@@ -21,11 +21,8 @@ export default {
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#FFFFFF"
+      backgroundColor: "#000"
     }
-  },
-  web: {
-    favicon: "./assets/favicon.png"
   },
   description: "",
   extra: {

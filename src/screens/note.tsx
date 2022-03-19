@@ -74,7 +74,7 @@ const NoteScreen = (props: Props) => {
   const handleDelete = async () => {
     setSaving(true);
     const q = doc(db, `/notes/${id}`);
-    await setDoc(q, {isTrashed: true});
+    await setDoc(q, {...note, isTrashed: true});
     setSaving(false);
   };
 

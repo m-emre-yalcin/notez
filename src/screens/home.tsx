@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import {useContext, useEffect, useState, useCallback, useRef} from 'react';
 import {
   RefreshControl,
   StyleSheet,
@@ -12,108 +12,28 @@ import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
 import PlusButton from '../components/PlusButton';
 import Colors from '../global/colors';
-import firebaseApp from '../services/firebase';
-import {
-  getFirestore,
-  collection,
-  query,
-  orderBy,
-  where,
-  startAfter,
-  limit,
-  onSnapshot,
-  getDocs,
-  setDoc,
-  doc,
-} from 'firebase/firestore';
 
-import type {Note} from '../types';
-
-// Firestore database
-const db = getFirestore(firebaseApp);
+import type {Note} from '../components/context/index.d';
+import {AppContext} from '../components/context';
 
 const Home = ({navigation}) => {
-  const [notes, setNotes] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [newStart, setNewStart] = useState<any>(); // starting point of the query
-  const [isMax, setMax] = useState(false);
+  const {state, dispatch} = useContext(AppContext);
   const flatList = useRef(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    getNotes();
+    state.getNotes();
   }, []);
 
   const onRefresh = useCallback(() => {
     // reset get states
-    setMax(false);
-    setNewStart(false);
-    setNotes([]);
+    dispatch({type: 'RESET'});
 
+    // fetch notes
     setRefreshing(true);
-    getNotes().then(() => {
-      setRefreshing(false);
-    });
+    state.getNotes();
+    setRefreshing(false);
   }, []);
-
-  const getNotes = async () => {
-    const maxLimit = 8;
-
-    if (!isMax) {
-      setLoading(true);
-      let q;
-
-      if (newStart)
-        q = query(
-          collection(db, 'notes/'),
-          where('isTrashed', '==', false),
-          orderBy('created_at', 'desc'),
-          limit(maxLimit),
-          startAfter(newStart),
-        );
-      else
-        q = query(
-          collection(db, 'notes/'),
-          where('isTrashed', '==', false),
-          orderBy('created_at', 'desc'),
-          limit(maxLimit),
-        );
-      const querySnapshot = await getDocs(q);
-
-      const data = [...notes];
-      querySnapshot.forEach(doc => {
-        data.push(doc.data());
-        setNewStart(doc);
-      });
-      setNotes(data);
-      if (querySnapshot.docs.length < maxLimit) setMax(true);
-      else setMax(false);
-
-      console.log(querySnapshot.docs.length, 'notes fetched', 'ismax:', isMax);
-      setLoading(false);
-    } else console.log('max');
-    return loading;
-  };
-
-  const addNote = async () => {
-    const note = {
-      id: Date.now(),
-      title: '',
-      content: '',
-      color: '#fff',
-      created_at: Date.now(),
-      updated_at: Date.now(),
-      isArchived: false,
-      isPinned: false,
-      isTrashed: false,
-      user: null,
-    } as Note;
-    const q = doc(db, `/notes/${note.id}`);
-    await setDoc(q, note).then(() => {
-      console.log('note added:', note.id);
-    });
-    return note;
-  };
 
   return (
     <SafeAreaView>
@@ -122,8 +42,8 @@ const Home = ({navigation}) => {
         style={style.noteList}
         ListHeaderComponent={<SearchBar />}
         ListEmptyComponent={
-          notes.length === 0 &&
-          !loading && (
+          context.notes.length === 0 &&
+          !context.loading && (
             <View>
               <Text style={{color: Colors.tertiary, padding: 10}}>
                 Add some notes...
@@ -137,19 +57,19 @@ const Home = ({navigation}) => {
         ListFooterComponent={
           <View
             style={{
-              height: loading ? 50 : 5,
+              height: context.loading ? 50 : 5,
               display: 'flex',
               flex: 1,
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-            {loading && (
+            {context.loading && (
               <ActivityIndicator size="large" color={Colors.primary} />
             )}
           </View>
         }
-        onEndReached={() => getNotes()}
-        data={notes}
+        onEndReached={() => context.getNotes()}
+        data={context.notes}
         renderItem={({item}) => (
           <NoteContainer
             item={item}
@@ -159,7 +79,7 @@ const Home = ({navigation}) => {
         keyExtractor={(item: Note) => item.id}
       />
 
-      <PlusButton onPress={() => addNote()} navigation={navigation} />
+      <PlusButton onPress={() => context.addNote()} navigation={navigation} />
     </SafeAreaView>
   );
 };
