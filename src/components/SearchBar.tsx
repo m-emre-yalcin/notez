@@ -10,7 +10,7 @@ import {
 import {Ionicons} from '@expo/vector-icons';
 import Colors from '../global/colors';
 
-const SearchBar = () => {
+const SearchBar = ({onChangeText}) => {
   const [focused, setFocused] = useState(false);
   return (
     <View style={style.searchBar}>
@@ -22,6 +22,7 @@ const SearchBar = () => {
         placeholder="Search"
         placeholderTextColor={Colors.tertiary}
         autoCapitalize="none"
+        onChangeText={onChangeText}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />

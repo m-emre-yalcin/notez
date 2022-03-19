@@ -9,20 +9,28 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import SearchBar from '../components/SearchBar';
+import {debounce} from 'lodash';
 import NoteContainer from '../components/NoteContainer';
 import PlusButton from '../components/PlusButton';
 import Colors from '../global/colors';
 
-import type {Note} from '../components/context/index.d';
-import {AppContext} from '../components/context';
+import {AppContext, Note} from '../components/context';
 
 const Home = ({navigation}) => {
-  const {state, dispatch} = useContext(AppContext);
-  const flatList = useRef(null);
+  const ctx = useContext(AppContext);
+  const {state, dispatch, actions} = ctx;
   const [refreshing, setRefreshing] = useState(false);
 
+  const flatList = useRef(null);
+  const handleSearchNotes = useCallback(
+    debounce(text => {
+      actions.searchNotes(ctx, text);
+    }, 500),
+    [],
+  );
+
   useEffect(() => {
-    state.getNotes();
+    actions.getNotes(ctx);
   }, []);
 
   const onRefresh = useCallback(() => {
@@ -31,7 +39,7 @@ const Home = ({navigation}) => {
 
     // fetch notes
     setRefreshing(true);
-    state.getNotes();
+    actions.getNotes(ctx);
     setRefreshing(false);
   }, []);
 
@@ -40,10 +48,10 @@ const Home = ({navigation}) => {
       <FlatList
         ref={flatList}
         style={style.noteList}
-        ListHeaderComponent={<SearchBar />}
+        ListHeaderComponent={<SearchBar onChangeText={handleSearchNotes} />}
         ListEmptyComponent={
-          context.notes.length === 0 &&
-          !context.loading && (
+          state.notes.length === 0 &&
+          !state.loading && (
             <View>
               <Text style={{color: Colors.tertiary, padding: 10}}>
                 Add some notes...
@@ -57,19 +65,19 @@ const Home = ({navigation}) => {
         ListFooterComponent={
           <View
             style={{
-              height: context.loading ? 50 : 5,
+              height: state.loading ? 50 : 5,
               display: 'flex',
               flex: 1,
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-            {context.loading && (
+            {state.loading && (
               <ActivityIndicator size="large" color={Colors.primary} />
             )}
           </View>
         }
-        onEndReached={() => context.getNotes()}
-        data={context.notes}
+        onEndReached={() => actions.getNotes(ctx)}
+        data={state.notes}
         renderItem={({item}) => (
           <NoteContainer
             item={item}
@@ -79,7 +87,10 @@ const Home = ({navigation}) => {
         keyExtractor={(item: Note) => item.id}
       />
 
-      <PlusButton onPress={() => context.addNote()} navigation={navigation} />
+      <PlusButton
+        onPress={() => actions.addNote(ctx)}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 };

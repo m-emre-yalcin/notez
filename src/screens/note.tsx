@@ -1,4 +1,5 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useContext, useEffect, useCallback} from 'react';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   ScrollView,
   TextInput,
@@ -7,37 +8,26 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {debounce} from 'lodash';
 import NoteHeader from '../components/NoteHeader';
 import Colors from '../global/colors';
-import firebaseApp from '../services/firebase';
-import {
-  getFirestore,
-  query,
-  where,
-  startAt,
-  limit,
-  setDoc,
-  getDoc,
-  updateDoc,
-  doc,
-} from 'firebase/firestore';
+import {debounce} from 'lodash';
+import {AppContext} from '../components/context';
+import {doc, getDoc, setDoc, updateDoc} from 'firebase/firestore';
 
-const db = getFirestore(firebaseApp);
-
-import type {Note} from '../types';
 type Props = {
   navigation: any;
   route: any;
 };
 
 const NoteScreen = (props: Props) => {
-  let noteEditorInput: TextInput | null = null;
+  const ctx = useContext(AppContext);
+  const {state, dispatch, actions} = ctx;
   const [note, setNote] = useState({} as any);
   const [saving, setSaving] = useState(false);
+
+  let noteEditorInput: TextInput | null = null;
   const id = props.route.params.id;
-  const q = doc(db, `notes/${id}`);
+  const q = doc(state.firestore, `notes/${id}`);
 
   useEffect(() => {
     console.log('note oppening:', id);
@@ -73,7 +63,7 @@ const NoteScreen = (props: Props) => {
   };
   const handleDelete = async () => {
     setSaving(true);
-    const q = doc(db, `/notes/${id}`);
+    const q = doc(state.firestore, `/notes/${id}`);
     await setDoc(q, {...note, isTrashed: true});
     setSaving(false);
   };
@@ -85,6 +75,7 @@ const NoteScreen = (props: Props) => {
       updateDoc(q, note)
         .then(() => {
           setSaving(false);
+          dispatch({type: 'UPDATE_NOTE', payload: note});
           console.log('note updated:', id);
         })
         .catch(error => {
