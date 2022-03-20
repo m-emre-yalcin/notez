@@ -82,7 +82,7 @@ const NoteScreen = (props: Props) => {
           setSaving(false);
           console.log('error when note updated:', error);
         });
-    }, 500),
+    }, 1000),
     [],
   );
 

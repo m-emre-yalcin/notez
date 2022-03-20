@@ -10,7 +10,7 @@ import Note from './src/screens/note';
 import Colors from './src/global/colors';
 
 // Hide all warnings
-LogBox.ignoreAllLogs();
+// LogBox.ignoreAllLogs();
 
 const TransitionScreenOptions = {
   ...TransitionPresets.ScaleFromCenterAndroid, // This is where the transition happens

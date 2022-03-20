@@ -5,10 +5,10 @@ import {
   where,
   startAfter,
   limit,
-  onSnapshot,
   getDocs,
   setDoc,
   doc,
+  // onSnapshot,
 } from 'firebase/firestore';
 import type { AppActions, Note } from './index.d';
 
@@ -53,7 +53,10 @@ export default {
 
         console.log(querySnapshot.docs.length, 'notes fetched', 'ismax:', state.params.isMax);
         dispatch({ type: 'SET_LOADING', payload: false });
-      })
+      }).catch((error: any) => {
+        console.log('Error getting documents: ', error);
+        dispatch({ type: 'SET_LOADING', payload: false });
+      });
     } else {
       console.log('max');
       return
@@ -75,9 +78,10 @@ export default {
     const q = doc(state.firestore, `/notes/${note.id}`);
 
     // add the note
-    setDoc(q, note).then(() => {
+    return setDoc(q, note).then(() => {
       console.log('note added:', note.id);
       dispatch({ type: 'ADD_NOTE', payload: note });
+      return note
     });
   },
   searchNotes: ({ state, dispatch, actions }, searchText: string) => {

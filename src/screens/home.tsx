@@ -8,31 +8,29 @@ import {
   FlatList,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import SearchBar from '../components/SearchBar';
 import {debounce} from 'lodash';
+import {AppContext, Note} from '../components/context';
+import SearchBar from '../components/SearchBar';
 import NoteContainer from '../components/NoteContainer';
 import PlusButton from '../components/PlusButton';
 import Colors from '../global/colors';
-
-import {AppContext, Note} from '../components/context';
 
 const Home = ({navigation}) => {
   const ctx = useContext(AppContext);
   const {state, dispatch, actions} = ctx;
   const [refreshing, setRefreshing] = useState(false);
+  const flatListRef = useRef(null);
 
-  const flatList = useRef(null);
+  useEffect(() => {
+    actions.getNotes(ctx);
+  }, []);
+
   const handleSearchNotes = useCallback(
     debounce(text => {
       actions.searchNotes(ctx, text);
     }, 500),
     [],
   );
-
-  useEffect(() => {
-    actions.getNotes(ctx);
-  }, []);
-
   const onRefresh = useCallback(() => {
     // reset get states
     dispatch({type: 'RESET'});
@@ -46,7 +44,7 @@ const Home = ({navigation}) => {
   return (
     <SafeAreaView>
       <FlatList
-        ref={flatList}
+        ref={flatListRef}
         style={style.noteList}
         ListHeaderComponent={<SearchBar onChangeText={handleSearchNotes} />}
         ListEmptyComponent={
