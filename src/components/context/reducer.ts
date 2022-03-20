@@ -48,6 +48,11 @@ export default (state: AppState, action: DispatchProp) => {
           return note
         })
       }
+    case 'DELETE_NOTE':
+      return {
+        ...state,
+        notes: state.notes.filter((note: Note) => note.id !== action.payload.id)
+      }
     case 'RESET':
       return {
         ...state,

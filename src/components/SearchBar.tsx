@@ -12,6 +12,16 @@ import Colors from '../global/colors';
 
 const SearchBar = ({onChangeText}) => {
   const [focused, setFocused] = useState(false);
+  const [text, setText] = useState('');
+
+  const cancelSearch = e => {
+    if (text.length === 0) return;
+    else {
+      // cancelable
+      setText('');
+      onChangeText('');
+    }
+  };
   return (
     <View style={style.searchBar}>
       <TextInput
@@ -22,18 +32,27 @@ const SearchBar = ({onChangeText}) => {
         placeholder="Search"
         placeholderTextColor={Colors.tertiary}
         autoCapitalize="none"
-        onChangeText={onChangeText}
+        onChangeText={text => {
+          onChangeText(text);
+          setText(text);
+        }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
-      <Pressable
-        style={style.searchBarIcon}
-        android_ripple={{
-          color: Colors.primary,
-          borderless: true,
-        }}>
-        <Ionicons name="search-outline" size={24} color={Colors.primary} />
-      </Pressable>
+      {text.length > 0 ? (
+        <Pressable style={style.searchBarIcon} onPress={cancelSearch}>
+          <Ionicons name="close" size={24} color={Colors.primary} />
+        </Pressable>
+      ) : (
+        <Pressable
+          style={style.searchBarIcon}
+          android_ripple={{
+            color: Colors.primary,
+            borderless: true,
+          }}>
+          <Ionicons name="search-outline" size={24} color={Colors.primary} />
+        </Pressable>
+      )}
     </View>
   );
 };

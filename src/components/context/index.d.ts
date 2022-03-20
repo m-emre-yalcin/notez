@@ -49,6 +49,7 @@ export type DispatchActions =
   'SET_MAX' |
   'ADD_NOTE' |
   'UPDATE_NOTE' |
+  'DELETE_NOTE' |
   'RESET'
 
 export type AppAction = (ctx: ContextProps, ...any) => void

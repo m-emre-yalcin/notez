@@ -22,22 +22,23 @@ type Props = {
 const NoteScreen = (props: Props) => {
   const ctx = useContext(AppContext);
   const {state, dispatch, actions} = ctx;
-  const [note, setNote] = useState({} as any);
+  const [note, setNote] = useState({});
   const [saving, setSaving] = useState(false);
 
-  let noteEditorInput: TextInput | null = null;
-  const id = props.route.params.id;
+  const {id} = props.route.params;
   const q = doc(state.firestore, `notes/${id}`);
+  let noteEditorInput: TextInput | null = null;
 
   useEffect(() => {
     console.log('note oppening:', id);
 
-    if (id && typeof id === 'number') {
-      if (props.route.params.content) {
-        // set note that comes from parameters
-        setNote({...props.route.params});
-      } else {
-        // get fresh note from firebase
+    if (id) {
+      const note = state.notes.find(note => Number(note.id) == Number(id));
+
+      // if note exists set it for this page's state
+      if (note) setNote(note);
+      // if not, fetch it from firestore
+      else
         getDoc(q).then(doc => {
           if (doc.exists) {
             setNote(doc.data());
@@ -45,26 +46,28 @@ const NoteScreen = (props: Props) => {
             console.log('note not found');
           }
         });
-      }
     }
   }, [id]);
 
   const handleTitleChanges = async text => {
-    const newNote = {...note};
-    newNote.title = text;
-    setNote(newNote);
-    updateNote(newNote);
+    setNote({
+      ...note,
+      title: text,
+    });
+    updateNote(note);
   };
   const handleContentChanges = async text => {
-    const newNote = {...note};
-    newNote.content = text;
-    setNote(newNote);
-    updateNote(newNote);
+    setNote({
+      ...note,
+      content: text,
+    });
+    updateNote(note);
   };
   const handleDelete = async () => {
     setSaving(true);
     const q = doc(state.firestore, `/notes/${id}`);
     await setDoc(q, {...note, isTrashed: true});
+    dispatch({type: 'DELETE_NOTE', payload: {id}});
     setSaving(false);
   };
 

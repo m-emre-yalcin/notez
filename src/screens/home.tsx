@@ -79,7 +79,7 @@ const Home = ({navigation}) => {
         renderItem={({item}) => (
           <NoteContainer
             item={item}
-            onPress={() => navigation.push('Note', item)}
+            onPress={() => navigation.push('Note', {id: item.id})}
           />
         )}
         keyExtractor={(item: Note) => item.id}
